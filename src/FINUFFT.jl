@@ -492,32 +492,22 @@ end
 
 Compute type-1 1D complex nonuniform FFT. Output stored in fk.
 """
-function nufft1d1!(xj      :: StridedArray{Float64}, 
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft1d1!(xj      :: StridedArray{T}, 
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj) 
-    @assert length(cj)==nj        
-    ms = length(fk)    
-    # Calling interface
-    # int finufft1d1(BIGINT nj,FLT* xj,CPX* cj,int iflag,FLT eps,BIGINT ms,
-    # 	       CPX* fk, nufft_opts opts);
-    ret = ccall( (:finufft1d1, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, cj, iflag, eps, ms, fk, opts
-                )
-    check_ret(ret)
+    @assert length(cj) == nj        
+    ms = length(fk)
+
+    p = finufft_makeplan(1, 1, (ms, 1, 1), iflag, 1, eps, opts)
+    finufft_setpts(p, xj)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)
 end
+
 
 
 """
@@ -531,31 +521,20 @@ end
 
 Compute type-2 1D complex nonuniform FFT. Output stored in cj.
 """
-function nufft1d2!(xj      :: StridedArray{Float64}, 
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft1d2!(xj      :: StridedArray{T}, 
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(cj)==nj        
     ms = length(fk)    
-    # Calling interface
-    # int finufft1d2(BIGINT nj,FLT* xj,CPX* cj,int iflag,FLT eps,BIGINT ms,
-    #                CPX* fk, nufft_opts opts);
-    ret = ccall( (:finufft1d2, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, cj, iflag, eps, ms, fk, opts
-                )
-    check_ret(ret)    
+    
+    p = finufft_makeplan(2, 1, (ms, 1, 1), iflag, 1, eps, opts)
+    finufft_setpts(p, xj)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)  
 end
 
 """
@@ -570,33 +549,22 @@ end
 
 Compute type-3 1D complex nonuniform FFT. Output stored in fk.
 """
-function nufft1d3!(xj      :: StridedArray{Float64}, 
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft1d3!(xj      :: StridedArray{T}, 
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   sk      :: StridedArray{Float64},
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   sk      :: StridedArray{T},
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(cj)==nj        
     nk = length(sk)
     @assert length(fk)==nk
-    # Calling interface
-    # int finufft1d3(BIGINT nj,FLT* x,CPX* c,int iflag,FLT eps,BIGINT nk, FLT* s, CPX* f, nufft_opts opts);
-    ret = ccall( (:finufft1d3, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                Ref{Cdouble},            
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, cj, iflag, eps, nk, sk, fk, opts
-                )
-    check_ret(ret)
+    
+    p = finufft_makeplan(3, 1, (ms, 1, 1), iflag, 1, eps, opts)
+    finufft_setpts(p, xj, T[], T[], sk)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)
 end
 
 
@@ -614,35 +582,22 @@ end
 
 Compute type-1 2D complex nonuniform FFT. Output stored in fk.
 """
-function nufft2d1!(xj      :: StridedArray{Float64}, 
-                   yj      :: StridedArray{Float64}, 
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft2d1!(xj      :: StridedArray{T}, 
+                   yj      :: StridedArray{T}, 
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(yj)==nj
     @assert length(cj)==nj    
     ms, mt = size(fk)    
-    # Calling interface
-    # int finufft2d1(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,FLT eps,
-    #                BIGINT ms, BIGINT mt, CPX* fk, nufft_opts opts);
-    ret = ccall( (:finufft2d1, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},            
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                BIGINT,            
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, yj, cj, iflag, eps, ms, mt, fk, opts
-                )
-    check_ret(ret)
+   
+    p = finufft_makeplan(1, 2, (ms, mt, 1), iflag, 1, eps, opts)
+    finufft_setpts(p, xj, yj)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)
 end
 
 
@@ -658,35 +613,22 @@ end
 
 Compute type-2 2D complex nonuniform FFT. Output stored in cj.
 """
-function nufft2d2!(xj      :: StridedArray{Float64}, 
-                   yj      :: StridedArray{Float64}, 
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft2d2!(xj      :: StridedArray{T}, 
+                   yj      :: StridedArray{T}, 
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(yj)==nj
     @assert length(cj)==nj    
     ms, mt = size(fk)    
-    # Calling interface
-    # int finufft2d2(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,FLT eps,
-    #                BIGINT ms, BIGINT mt, CPX* fk, nufft_opts opts);
-    ret = ccall( (:finufft2d2, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},            
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                BIGINT,            
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, yj, cj, iflag, eps, ms, mt, fk, opts
-                )
-    check_ret(ret)
+    
+    p = finufft_makeplan(2, 2, (ms, mt, 1), iflag, 1, eps, opts)
+    finufft_setpts(p, xj, yj)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)
 end
 
 """
@@ -703,39 +645,26 @@ end
 
 Compute type-3 2D complex nonuniform FFT. Output stored in fk.
 """
-function nufft2d3!(xj      :: StridedArray{Float64}, 
-                   yj      :: StridedArray{Float64},
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft2d3!(xj      :: StridedArray{T}, 
+                   yj      :: StridedArray{T},
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   sk      :: StridedArray{Float64},
-                   tk      :: StridedArray{Float64},
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   sk      :: StridedArray{T},
+                   tk      :: StridedArray{T},
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(yj)==nj
     @assert length(cj)==nj
     nk = length(sk)
     @assert length(tk)==nk
     @assert length(fk)==nk    
-    # Calling interface
-    # int finufft2d3(BIGINT nj,FLT* x,FLT *y,CPX* cj,int iflag,FLT eps,BIGINT nk, FLT* s, FLT* t, CPX* fk, nufft_opts opts);    
-    ret = ccall( (:finufft2d3, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},            
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},            
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, yj, cj, iflag, eps, nk, sk, tk, fk, opts
-                )
-    check_ret(ret)
+    
+    p = finufft_makeplan(3, 2, (ms, mt, 1), iflag, 1, eps, opts)
+    finufft_setpts(p, xj, yj, T[], sk, tk)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)
 end
 
 ## 3D
@@ -753,39 +682,24 @@ end
 
 Compute type-1 3D complex nonuniform FFT. Output stored in fk.
 """
-function nufft3d1!(xj      :: StridedArray{Float64}, 
-                   yj      :: StridedArray{Float64}, 
-                   zj      :: StridedArray{Float64}, 
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft3d1!(xj      :: StridedArray{T}, 
+                   yj      :: StridedArray{T}, 
+                   zj      :: StridedArray{T}, 
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(yj)==nj
     @assert length(zj)==nj    
     @assert length(cj)==nj    
     ms, mt, mu = size(fk)    
-    # Calling interface
-    # int finufft3d1(BIGINT nj,FLT* xj,FLT *yj,FLT *zj,CPX* cj,int iflag,FLT eps,
-    # 	       BIGINT ms, BIGINT mt, BIGINT mu, CPX* fk, nufft_opts opts);
-    ret = ccall( (:finufft3d1, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},
-                Ref{Cdouble},                
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                BIGINT,
-                BIGINT,
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, yj, zj, cj, iflag, eps, ms, mt, mu, fk, opts
-                )
-    check_ret(ret)
+    
+    p = finufft_makeplan(1, 3, (ms, mt, mu), iflag, 1, eps, opts)
+    finufft_setpts(p, xj, yj, zj)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)  
 end
 
 """
@@ -801,39 +715,24 @@ end
 
 Compute type-2 3D complex nonuniform FFT. Output stored in cj.
 """
-function nufft3d2!(xj      :: StridedArray{Float64}, 
-                   yj      :: StridedArray{Float64},
-                   zj      :: StridedArray{Float64},                    
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft3d2!(xj      :: StridedArray{T}, 
+                   yj      :: StridedArray{T},
+                   zj      :: StridedArray{T},                    
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(yj)==nj
     @assert length(zj)==nj    
     @assert length(cj)==nj    
     ms, mt, mu = size(fk)    
-    # Calling interface
-    # int finufft3d2(BIGINT nj,FLT* xj,FLT *yj,FLT *zj,CPX* cj,int iflag,FLT eps,
-    #                BIGINT ms, BIGINT mt, BIGINT mu, CPX* fk, nufft_opts opts);
-    ret = ccall( (:finufft3d2, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},            
-                Ref{Cdouble},            
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                BIGINT,
-                BIGINT,
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, yj, zj, cj, iflag, eps, ms, mt, mu, fk, opts
-                )
-    check_ret(ret)
+    
+    p = finufft_makeplan(2, 3, (ms, mt, mu), iflag, 1, eps, opts)
+    finufft_setpts(p, xj, yj, zj)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)
 end
 
 """
@@ -852,17 +751,17 @@ end
 
 Compute type-3 3D complex nonuniform FFT. Output stored in fk.
 """
-function nufft3d3!(xj      :: StridedArray{Float64}, 
-                   yj      :: StridedArray{Float64},
-                   zj      :: StridedArray{Float64},                   
-                   cj      :: StridedArray{ComplexF64}, 
+function nufft3d3!(xj      :: StridedArray{T}, 
+                   yj      :: StridedArray{T},
+                   zj      :: StridedArray{T},                   
+                   cj      :: StridedArray{Complex{T}}, 
                    iflag   :: Integer, 
-                   eps     :: Float64,
-                   sk      :: StridedArray{Float64},
-                   tk      :: StridedArray{Float64},
-                   uk      :: StridedArray{Float64},
-                   fk      :: StridedArray{ComplexF64},
-                   opts    :: nufft_opts = finufft_default_opts())
+                   eps     :: T,
+                   sk      :: StridedArray{T},
+                   tk      :: StridedArray{T},
+                   uk      :: StridedArray{T},
+                   fk      :: StridedArray{Complex{T}},
+                   opts    :: nufft_opts = finufft_default_opts()) where T <: Union{Float32,Float64}
     nj = length(xj)
     @assert length(yj)==nj
     @assert length(zj)==nj    
@@ -871,28 +770,11 @@ function nufft3d3!(xj      :: StridedArray{Float64},
     @assert length(tk)==nk
     @assert length(uk)==nk    
     @assert length(fk)==nk    
-    # Calling interface
-    # int finufft3d3(BIGINT nj,FLT* x,FLT *y,FLT *z, CPX* cj,int iflag,
-    #                FLT eps,BIGINT nk,FLT* s, FLT* t, FLT *u,
-    #                CPX* fk, nufft_opts opts);
-    ret = ccall( (:finufft3d3, libfinufft),
-                Cint,
-                (BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},
-                Ref{Cdouble},                  
-                Ref{ComplexF64},
-                Cint,
-                Cdouble,
-                BIGINT,
-                Ref{Cdouble},
-                Ref{Cdouble},
-                Ref{Cdouble},                        
-                Ref{ComplexF64},
-                Ref{nufft_opts}),
-                nj, xj, yj, zj, cj, iflag, eps, nk, sk, tk, uk, fk, opts
-                )
-    check_ret(ret)
+    
+    p = finufft_makeplan(3, 3, (ms, mt, mu), iflag, 1, eps, opts)
+    finufft_setpts(p, xj, yj, zj, sk, tk, uk)
+    finufft_exec(p, cj, fk)
+    finufft_destroy(p)
 end
 
 
@@ -902,8 +784,6 @@ function __init__()
     finufft_destroy(finufft_makeplan(1,1,[100;1;1],1,1,1e-4))
 end
 
-# Load single precision interfaces
-include("single.jl")
 include("guru.jl")
 
 end # module
