@@ -560,6 +560,7 @@ function nufft1d3!(xj      :: StridedArray{T},
     @assert length(cj)==nj        
     nk = length(sk)
     @assert length(fk)==nk
+    ms = length(fk)
     
     p = finufft_makeplan(3, 1, (ms, 1, 1), iflag, 1, eps, opts)
     finufft_setpts(p, xj, T[], T[], sk)
@@ -623,7 +624,7 @@ function nufft2d2!(xj      :: StridedArray{T},
     nj = length(xj)
     @assert length(yj)==nj
     @assert length(cj)==nj    
-    ms, mt = size(fk)    
+    ms, mt = size(fk)
     
     p = finufft_makeplan(2, 2, (ms, mt, 1), iflag, 1, eps, opts)
     finufft_setpts(p, xj, yj)
@@ -659,7 +660,8 @@ function nufft2d3!(xj      :: StridedArray{T},
     @assert length(cj)==nj
     nk = length(sk)
     @assert length(tk)==nk
-    @assert length(fk)==nk    
+    @assert length(fk)==nk
+    ms, mt = size(fk)
     
     p = finufft_makeplan(3, 2, (ms, mt, 1), iflag, 1, eps, opts)
     finufft_setpts(p, xj, yj, T[], sk, tk)
@@ -769,7 +771,8 @@ function nufft3d3!(xj      :: StridedArray{T},
     nk = length(sk)
     @assert length(tk)==nk
     @assert length(uk)==nk    
-    @assert length(fk)==nk    
+    @assert length(fk)==nk
+    ms, mt, mu = size(fk)    
     
     p = finufft_makeplan(3, 3, (ms, mt, mu), iflag, 1, eps, opts)
     finufft_setpts(p, xj, yj, zj, sk, tk, uk)
@@ -785,5 +788,28 @@ function __init__()
 end
 
 include("guru.jl")
+
+
+
+# keep nufftf calls for compability
+const nufftf1d1 = nufft1d1
+const nufftf1d2 = nufft1d2
+const nufftf1d3 = nufft1d3
+const nufftf2d1 = nufft2d1
+const nufftf2d2 = nufft2d2
+const nufftf2d3 = nufft2d3
+const nufftf3d1 = nufft3d1
+const nufftf3d2 = nufft3d2
+const nufftf3d3 = nufft3d3
+
+const nufftf1d1! = nufft1d1!
+const nufftf1d2! = nufft1d2!
+const nufftf1d3! = nufft1d3!
+const nufftf2d1! = nufft2d1!
+const nufftf2d2! = nufft2d2!
+const nufftf2d3! = nufft2d3!
+const nufftf3d1! = nufft3d1!
+const nufftf3d2! = nufft3d2!
+const nufftf3d3! = nufft3d3!
 
 end # module
