@@ -560,9 +560,9 @@ function nufft1d3!(xj      :: StridedArray{T},
     @assert length(cj)==nj        
     nk = length(sk)
     @assert length(fk)==nk
-    ms = length(fk)
+    ms = length(sk)
     
-    p = finufft_makeplan(3, 1, (ms, 1, 1), iflag, 1, eps, opts)
+    p = finufft_makeplan(3, 1, (0, 0, 0), iflag, 1, eps, opts)
     finufft_setpts(p, xj, T[], T[], sk)
     finufft_exec(p, cj, fk)
     finufft_destroy(p)
@@ -661,9 +661,8 @@ function nufft2d3!(xj      :: StridedArray{T},
     nk = length(sk)
     @assert length(tk)==nk
     @assert length(fk)==nk
-    ms, mt = size(fk)
     
-    p = finufft_makeplan(3, 2, (ms, mt, 1), iflag, 1, eps, opts)
+    p = finufft_makeplan(3, 2, (0, 0, 0), iflag, 1, eps, opts)
     finufft_setpts(p, xj, yj, T[], sk, tk)
     finufft_exec(p, cj, fk)
     finufft_destroy(p)
@@ -772,9 +771,8 @@ function nufft3d3!(xj      :: StridedArray{T},
     @assert length(tk)==nk
     @assert length(uk)==nk    
     @assert length(fk)==nk
-    ms, mt, mu = size(fk)    
     
-    p = finufft_makeplan(3, 3, (ms, mt, mu), iflag, 1, eps, opts)
+    p = finufft_makeplan(3, 3, (0, 0, 0), iflag, 1, eps, opts)
     finufft_setpts(p, xj, yj, zj, sk, tk, uk)
     finufft_exec(p, cj, fk)
     finufft_destroy(p)
