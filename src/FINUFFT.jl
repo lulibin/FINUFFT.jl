@@ -779,12 +779,6 @@ function nufft3d3!(xj      :: StridedArray{T},
 end
 
 
-function __init__()
-    # generate plan once per precision to ensure thread-safety
-    finufft_destroy(finufft_makeplan(1,1,[100;1;1],1,1,1f-4))
-    finufft_destroy(finufft_makeplan(1,1,[100;1;1],1,1,1e-4))
-end
-
 include("guru.jl")
 
 
